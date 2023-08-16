@@ -1,0 +1,46 @@
+body {
+    background-color: #E8ECEF;
+  }
+  
+.centered {
+    padding-top: 200px;
+    text-align: center;
+}
+.signup-form, .login-form{
+    margin-top: 150px;
+}
+.form-signin{
+    width: 350px;
+}
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black background */
+    z-index: 9999; /* Higher z-index to appear above other elements */
+  }
+
+  /* Style for the pop-up content */
+  .modal main {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 5px;
+    width: 300px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.3);
+  }
+
+  /* Style to show the pop-up when it has the 'show' class */
+  .modal.show {
+    display: block;
+  }
+  .close-button{
+    border-radius: 50%;
+    border: 1px solid black;
+  }

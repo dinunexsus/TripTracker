@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Form</title>
+    <script>
+      function initMap() {
+          const fromInput = document.getElementById('floatingInputFrom');
+          const toInput = document.getElementById('floatingInputTo');
+
+          new google.maps.places.Autocomplete(fromInput);
+          new google.maps.places.Autocomplete(toInput);
+
+         
+      }
+  </script>
+  <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=places&callback=initMap" async defer></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
+    <link rel="stylesheet" href="css/bootstrap-social.css">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+      .pac-container {
+        z-index: 9999 !important;
+      }
+    </style>
+    
+
+</head>
+<body>
+    <div class="container d-flex justify-content-end mt-3">
+        <button class="btn btn-dark" onclick="showAddTripPopup()">Add Trip</button>
+        <a class="btn btn-light" role="button" href="/logout">Logout</a>
+      </div>
+      
+    <table class="table mt-5"  id="tripTable">
+        <thead>
+          <tr>
+            <th scope="col">Date & Time</th>
+            <th scope="col">From</th>
+            <th scope="col">To</th>
+            <th scope="col">Distance</th>
+          </tr>
+        </thead>
+        <tbody>
+
+        </tbody>
+      </table>
+
+      <div id="addTripPopup" class="modal">
+        <main class="form-signin m-auto">
+            <div class="container d-flex justify-content-end mt-3">
+                <button class="btn btn-light close-button" onclick="closeAddTripPopup(event)">x</button>
+              </div>
+        <form id="tripForm" method="post" action="/trips">
+              <h1 class="h3 mb-3 fw-normal text-center mt-5">Add Trip</h1>
+    
+          <div class="form-floating pb-3">
+            <input type="datetime-local" class="form-control" id="floatingDateTime" placeholder="Select Date and Time" name="dateTime">
+          </div>
+    
+          <div class="form-floating pb-3">
+            <input type="text" class="form-control" id="floatingInputFrom" name="sourceLocation" placeholder="From" onchange="initMap()">
+          </div>
+    
+          <div class="form-floating pb-3">
+            <input type="text" class="form-control" id="floatingInputTo" name="destinationLocation" placeholder="To">
+          </div>
+    
+          <button class="btn btn-dark d-flex justify-content-center w-25 py-2 m-auto" type="submit">Submit</button>
+        </form>
+        </main>
+      </div>
+
+
+<script>
+  function showAddTripPopup() {
+      document.getElementById('addTripPopup').classList.add('show');
+  }
+</script>
+<script>
+function closeAddTripPopup(){
+  document.getElementById('addTripPopup').classList.remove('show');
+}
+</script>
+
+
+<script type="module">
+
+
+document.addEventListener('DOMContentLoaded', (event) => {
+  getDatafromDatabase();
+});
+
+let tripCounter = 1; 
+
+import { createClient } from 'https://cdn.skypack.dev/@supabase/supabase-js';
+
+
+const supabaseUrl = 'supabase_url'; // replace with your supabase url
+const supabaseAnonKey = 'supabase_key'; // replace with your supabase anonymous key
+
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+
+
+
+
+async function getDatafromDatabase(event) {
+ 
+
+  const supabaseEndpoint = `${supabaseUrl}/rest/v1/Trips`;
+  const headers = {
+    "apikey": supabaseAnonKey,
+    "Content-Type": "application/json",
+    "Authorization": `Bearer ${supabaseAnonKey}`, // assuming anonymous access; adjust as needed
+  };
+
+  try {
+    const response = await fetch(supabaseEndpoint, { headers: headers });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log(data);
+
+    data.forEach(tripData => {
+      addTripToTable(tripData.dateTime, tripData.source, tripData.destination, tripData.distance);
+    });
+
+  } catch (error) {
+    console.error('Error:', error);
+  }
+
+
+}
+
+
+
+function addTripToTable(dateTime, from, to, distance) {
+  const tableBody = document.querySelector('#tripTable tbody');
+
+  // Create a new row and cells
+  const newRow = document.createElement('tr');
+  const dateCell = document.createElement('td');
+  const fromCell = document.createElement('td');
+  const toCell = document.createElement('td');
+  const distanceCell = document.createElement('td');
+
+  // Set the cell content
+  dateCell.textContent = dateTime;
+  fromCell.textContent = from;
+  toCell.textContent = to;
+  distanceCell.textContent = distance;
+
+  // Append the cells to the row
+  newRow.appendChild(dateCell);
+  newRow.appendChild(fromCell);
+  newRow.appendChild(toCell);
+  newRow.appendChild(distanceCell);
+  
+  newRow.id = `trip-${tripCounter}`;
+  tripCounter++;
+  // Append the row to the table
+  tableBody.appendChild(newRow);
+}
+
+
+</script>
+</body>
+</html>
+
+
+
+
+<!-- // function closeAddTripPopup(event) {
+  //   event.preventDefault();
+  
+  //   const dateTime = document.getElementById('floatingDateTime').value;
+  //   const from = document.getElementById('floatingInputFrom').value;
+  //   const to = document.getElementById('floatingInputTo').value;
+  //   document.getElementById('tripForm').submit();
+  //   // Reset the form fields
+   
+  //   // Send data to the server to get the distance
+  //   fetch('/trips', {
+  //     method: 'POST',
+  //     headers: {
+  //       'Content-Type': 'application/json'
+  //     },
+  //     body: JSON.stringify({
+  //       sourceLocation: from,
+  //       destinationLocation: to
+  //     })
+  //   })
+  //   .then(response => response.json())
+  //   .then(data => {
+  //     if (data.error) {
+  //       console.error(data.error);
+  //     } else {
+  //       addTripToTable(dateTime, from, to, data.distance);
+  //     }
+  //   })
+  //   .catch(error => {
+  //     console.error('Error:', error);
+  //   });
+  
+  //   document.getElementById('floatingDateTime').value = '';
+  //   document.getElementById('floatingInputFrom').value = '';
+  //   document.getElementById('floatingInputTo').value = '';
+  //   document.getElementById('addTripPopup').classList.remove('show');
+  
+  // } -->
