@@ -8,7 +8,7 @@ const bcrypt = require('bcrypt');
 const app=express();
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
-
+const google = require('googleapis');
 app.use(bodyParser.urlencoded({extended:true}));
 app.use(express.static('public'));
 
@@ -318,7 +318,113 @@ app.get('/trips',ensureAuthenticated,(req,res)=>{
     res.sendFile(__dirname+'/trips.html');
 
 
-})
+});
+
+// app.get('/trips/user', ensureAuthenticated, async (req, res) => {
+//     const userId = req.user.id;
+  
+//     try {
+//       // Fetch trips for the logged-in user using Supabase
+//       const { data: trips, error } = await supabase
+//         .from('Trips')
+//         .select('*')
+//         .eq('user_id', userId);
+  
+//       if (error) {
+//         console.error('Error fetching trips from Supabase:', error);
+//         res.status(500).json({ message: 'Error fetching trips' });
+//       } else {
+//         // Send the trips data to the client-side JavaScript
+//         res.status(200).json(trips);
+//       }
+//     } catch (error) {
+//       console.error('Server error:', error);
+//       res.status(500).json({ message: 'Server error' });
+//     }
+//   });
+
+app.get('/trips/user', ensureAuthenticated, async (req, res) => {
+    const userId = req.user.id;
+    
+    try {
+      // Check if the logged-in user is an admin (you need to have a field in the user table to determine this)
+      const { data: loggedInUser } = await supabase
+        .from('Users')
+        .select('is_admin')
+        .eq('id', userId)
+        .single();
+      
+      if (loggedInUser) {
+        if (loggedInUser.is_admin==='yes') {
+          // If the logged-in user is an admin, fetch all trips
+          const { data: trips, error } = await supabase
+            .from('Trips')
+            .select('*');
+          if (error) {
+            console.error('Error fetching all trips from Supabase:', error);
+            res.status(500).json({ message: 'Error fetching trips' });
+          } else {
+            // Send all trips data to the client-side JavaScript
+            res.status(200).json(trips);
+          }
+        } else {
+          // If the logged-in user is not an admin, fetch only their trips
+          const { data: trips, error } = await supabase
+            .from('Trips')
+            .select('*')
+            .eq('user_id', userId);
+          
+          if (error) {
+            console.error('Error fetching trips from Supabase:', error);
+            res.status(500).json({ message: 'Error fetching trips' });
+          } else {
+            // Send the user's trips data to the client-side JavaScript
+            res.status(200).json(trips);
+          }
+        }
+      } else {
+        res.status(404).json({ message: 'User not found' });
+      }
+    } catch (error) {
+      console.error('Server error:', error);
+      res.status(500).json({ message: 'Server error' });
+    }
+  });
+
+  app.get('/trips/usersdata', ensureAuthenticated, async (req, res) => {
+    const userId = req.user.id;
+  
+    try {
+      // Check if the logged-in user is an admin (you need to have a field in the user table to determine this)
+      const { data: loggedInUser } = await supabase
+        .from('Users')
+        .select('is_admin')
+        .eq('id', userId)
+        .single();
+  
+      if (loggedInUser && loggedInUser.is_admin === 'yes') {
+        // If the logged-in user is an admin, fetch all users
+        const { data: users, error } = await supabase
+          .from('Users')
+          .select('*')
+          .eq('id', userId);
+  
+        if (error) {
+          console.error('Error fetching all users from Supabase:', error);
+          res.status(500).json({ message: 'Error fetching users' });
+        } else {
+          // Send all users data to the client-side JavaScript
+          res.status(200).json(users);
+        }
+      } else {
+        res.status(403).json({ message: 'Permission denied' });
+      }
+    } catch (error) {
+      console.error('Server error:', error);
+      res.status(500).json({ message: 'Server error' });
+    }
+  });
+  
 
 const GOOGLE_API=process.env.GOOGLE_API;
 
@@ -379,6 +485,47 @@ app.get('/logout', (req, res) => {
     });
 });
 
+// // Google Sheets API setup
+// const sheets = google.sheets('v4');
+// const sheetsClient = new google.auth.JWT({
+//   keyFile: 'your-service-account-key.json', // Replace with your service account key file
+//   scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+// });
+
+// // Define a function to export data to Google Sheets
+// async function exportToGoogleSheets(data) {
+//   try {
+//     await sheets.spreadsheets.values.append({
+//       auth: sheetsClient,
+//       spreadsheetId: 'YOUR_SPREADSHEET_ID', // Replace with your spreadsheet ID
+//       range: 'Sheet1', // Replace with the sheet name you want to update
+//       valueInputOption: 'RAW',
+//       insertDataOption: 'INSERT_ROWS',
+//       resource: {
+//         values: data,
+//       },
+//     });
+
+//     const sheetLink = `https://docs.google.com/spreadsheets/d/${'YOUR_SPREADSHEET_ID'}`;
+//     return sheetLink;
+//   } catch (error) {
+//     console.error('Error exporting data to Google Sheets:', error);
+//     throw error;
+//   }
+// }
+
+// app.post('/exportToGoogleSheets', async (req, res) => {
+//   try {
+//     const dataToExport = req.body.data;
+//     const sheetLink = await exportToGoogleSheets(dataToExport);
+
+//     // Send the sheet link as a response
+//     res.send(`Data export started. You can access the Google Sheet <a href="${sheetLink}" target="_blank">here</a>.`);
+//   } catch (error) {
+//     console.error('Error exporting data:', error);
+//     res.status(500).send('Error exporting data to Google Sheets.');
+//   }
+// });
 
 
 app.listen(4000,()=>{
