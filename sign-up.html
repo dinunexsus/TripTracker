@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SignUp Form</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
+    <link rel="stylesheet" href="css/bootstrap-social.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+
+<body>
+    <main class="form-signin signup-form m-auto">
+      <form action="/signup" method="post">
+        
+        <h1 class="h3 mb-3 fw-normal text-center mt-5">Sign Up</h1>
+  
+        <div class="form-floating pb-3">
+          <input type="email" class="form-control" id="emailInput" placeholder="name@example.com" name="email" required>
+        </div>
+        <div class="form-floating pb-3">
+          <input type="text" class="form-control" id="mobileInput" placeholder="Mobile number" name="phone" required>
+  
+          <!-- Remove the small element for displaying validation message -->
+        </div>
+        <div class="form-floating pb-3">
+          <input type="password" class="form-control" id="passwordInput" placeholder="Password" name="password" required>
+  
+          <!-- Remove the small element for displaying validation message -->
+        </div>
+  
+        <button class="btn btn-dark d-flex justify-content-center w-25 py-2 m-auto" type="submit" >Sign Up</button>
+      </form>
+    </main>
+    <script>
+        const mobileInput = document.getElementById('mobileInput');
+const passwordInput = document.getElementById('passwordInput');
+
+mobileInput.addEventListener('input', validateMobile);
+passwordInput.addEventListener('input', validatePassword);
+
+function validateMobile() {
+  const mobileNumber = mobileInput.value;
+  // Regular expression to check for 10 digits starting with 6, 7, 8, or 9
+  const mobileNumberPattern = /^[6-9]\d{9}$/;
+
+  if (!mobileNumberPattern.test(mobileNumber)) {
+    // If the mobile number is invalid, display an error message
+    mobileInput.setCustomValidity('Invalid mobile number. Please enter a valid 10-digit number.');
+  } else {
+    // If the mobile number is valid, clear the error message
+    mobileInput.setCustomValidity('');
+  }
+}
+
+function validatePassword() {
+  const password = passwordInput.value;
+
+  if (password.length < 8) {
+    // If the password is less than 8 characters, display an error message
+    passwordInput.setCustomValidity('Password must be at least 8 characters long.');
+  } else {
+    // If the password is valid, clear the error message
+    passwordInput.setCustomValidity('');
+  }
+}
+
+    </script>
+  </body>
+  
+  
+  
+</html>
