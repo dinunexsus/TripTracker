@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Form</title>
+    <script>
+      function initMap() {
+          const fromInput = document.getElementById('floatingInputFrom');
+          const toInput = document.getElementById('floatingInputTo');
+
+          new google.maps.places.Autocomplete(fromInput);
+          new google.maps.places.Autocomplete(toInput);
+
+         
+      }
+  </script>
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDogNeiG58yXPQn7bzF6SO6jQt4s1iRfiw&libraries=places&callback=initMap" async defer></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
+    <link rel="stylesheet" href="css/bootstrap-social.css">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+      .pac-container {
+        z-index: 9999 !important;
+      }
+    </style>
+    
+
+</head>
+<body>
+    <div class="container d-flex justify-content-end mt-3">
+        <button class="btn btn-dark" id="addOrExportButton"></button>
+        <a class="btn btn-light" role="button" href="/logout">Logout</a>
+      </div>
+      
+    <table class="table mt-5"  id="tripTable">
+        <thead>
+          <tr>
+            <th scope="col">User ID</th>
+            <th scope="col">Date & Time</th>
+            <th scope="col">From</th>
+            <th scope="col">To</th>
+            <th scope="col">Distance</th>
+          </tr>
+        </thead>
+        <tbody>
+
+        </tbody>
+      </table>
+
+      <div id="addTripPopup" class="modal">
+        <main class="form-signin m-auto">
+            <div class="container d-flex justify-content-end mt-3">
+                <button class="btn btn-light close-button" onclick="closeAddTripPopup(event)">x</button>
+              </div>
+        <form id="tripForm" method="post" action="/trips">
+              <h1 class="h3 mb-3 fw-normal text-center mt-5">Add Trip</h1>
+    
+          <div class="form-floating pb-3">
+            <input type="datetime-local" class="form-control" id="floatingDateTime" placeholder="Select Date and Time" name="dateTime">
+          </div>
+    
+          <div class="form-floating pb-3">
+            <input type="text" class="form-control" id="floatingInputFrom" name="sourceLocation" placeholder="From" onchange="initMap()">
+          </div>
+    
+          <div class="form-floating pb-3">
+            <input type="text" class="form-control" id="floatingInputTo" name="destinationLocation" placeholder="To">
+          </div>
+    
+          <button class="btn btn-dark d-flex justify-content-center w-25 py-2 m-auto" type="submit">Submit</button>
+        </form>
+        </main>
+      </div>
+
+
+<script>
+  function showAddTripPopup() {
+      document.getElementById('addTripPopup').classList.add('show');
+  }
+</script>
+<script>
+function closeAddTripPopup(){
+  document.getElementById('addTripPopup').classList.remove('show');
+}
+
+function tableToCSV(table) {
+  const headers = Array.from(table.querySelectorAll('th')).map(header => header.textContent);
+  const rows = Array.from(table.querySelectorAll('tbody tr'));
+
+  const dataRows = rows.map(row => {
+    const cells = Array.from(row.querySelectorAll('td'));
+    return cells.map(cell => cell.textContent).join(';');
+  });
+
+  const csvData = [headers.join(';'), ...dataRows].join('\n');
+  
+  return csvData;
+
+ 
+    }
+
+</script>
+
+
+<script type="module">
+
+
+
+let tripCounter = 1; 
+
+fetch('/trips/usersdata')
+  .then((response) => response.json())
+  .then((data) => {
+    // Check if the response contains user data
+    if (Array.isArray(data) && data.length > 0) {
+      // Process and use the user data as needed
+      console.log('Users:', data);
+      if(data[0].is_admin==="yes"){
+        document.getElementById('addOrExportButton').textContent='Export to CSV';
+        document.getElementById('addOrExportButton').addEventListener('click',()=>{
+              // Get the table element you want to export
+        // const table = document.querySelector('#tripTable');
+        // const csvData = tableToCSV(table);
+          // Get the table element you want to export
+    const table = document.querySelector('#tripTable');
+    
+    // Use the tableToCSV function to convert the table into CSV format
+    const csvData = tableToCSV(table);
+
+    // Create a Data URL for the CSV content
+    // const csvContent = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csvData);
+    const csvContent = 'data:text/csv;charset=utf-8,' + csvData;
+    console.log(csvContent);
+    // Create a download link and set attributes
+    const link = document.createElement('a');
+    link.setAttribute('href', csvContent);
+    link.setAttribute('download', 'table-data.csv');
+    // link.textContent = 'Download CSV'; // Display a user-friendly label
+    document.body.appendChild(link);
+             link.click();
+
+    // Append the link to the page
+    // document.body.appendChild(link);
+        // const rows = table.querySelectorAll('tbody tr');
+        // rows.forEach((row) => {
+        //         const rowData = [];
+        //         const cells = row.querySelectorAll('td');
+        //         cells.forEach((cell) => {
+        //             rowData.push(cell.textContent);
+        //         });
+        //         tableData.push(rowData.join(','));
+        //     });
+
+            // Create a CSV content string
+            // const csvContent = 'data:text/csv;charset=utf-8,' + csvData.join('\n');
+            // const csvContent = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csvData);
+            // console.log(csvData);
+            // // Create a download link and trigger the download
+            // const encodedUri = encodeURI(csvContent);
+            // const link = document.createElement('a');
+            // link.setAttribute('href', encodedUri);
+            // link.setAttribute('download', 'table-data.csv');
+            // document.body.appendChild(link);
+            // link.click();
+        // Convert the table data to CSV format
+        // const csvData = tableToCSV(table);
+
+        //     fetch('/exportToGoogleSheets', {
+        //         method: 'POST',
+        //         body: JSON.stringify({ data: csvData }),
+        //         headers: {
+        //             'Content-Type': 'application/json',
+        //         },
+        //     })
+        //         .then((response) => response.text())
+        //         .then((message) => {
+        //             document.body.innerHTML += '<p>' + message + '</p>';
+        //         })
+        //         .catch((error) => {
+        //             console.error('Error exporting data:', error);
+        //         });
+        })
+     }
+    
+      
+    
+    } else {
+      document.getElementById('addOrExportButton').textContent='Add Trip';
+        document.getElementById('addOrExportButton').addEventListener('click',()=>{
+          showAddTripPopup();
+        })
+      
+    }
+  })
+  .catch((error) => {
+    console.error('Error:', error);
+  });
+
+fetch('/trips/user')
+  .then((response) => response.json())
+  .then((data) => {
+    // Use the trips data retrieved from the server
+    console.log('User Trips:', data);
+
+    const tableBody = document.querySelector('#tripTable tbody');
+
+    if (data.length === 0) {
+      // Display a message when there are no trips
+      const noTripsRow = document.createElement('tr');
+      const noTripsCell = document.createElement('td');
+      noTripsCell.textContent = 'No trips have been added';
+      // Apply center alignment and bold style to the cell
+      noTripsCell.style.textAlign = 'center';
+      noTripsCell.style.fontWeight = 'bold';
+      noTripsCell.style.fontSize = '2rem';
+      noTripsCell.colSpan = 4; // Span all columns
+      noTripsRow.appendChild(noTripsCell);
+      tableBody.appendChild(noTripsRow);
+    } else {
+      // Iterate through the trips data and add them to the table
+      data.forEach((tripData) => {
+        addTripToTable(
+          tripData.user_id,
+          tripData.dateTime,
+          tripData.source,
+          tripData.destination,
+          tripData.distance
+        );
+      });
+    }
+  })
+  .catch((error) => {
+    console.error('Error:', error);
+  });
+
+function addTripToTable(id, dateTime, from, to, distance) {
+  const tableBody = document.querySelector('#tripTable tbody');
+
+  // Create a new row and cells
+  const newRow = document.createElement('tr');
+  const idCell = document.createElement('td');
+  const dateCell = document.createElement('td');
+  const fromCell = document.createElement('td');
+  const toCell = document.createElement('td');
+  const distanceCell = document.createElement('td');
+
+  // Set the cell content
+  idCell.textContent = id;
+  dateCell.textContent = dateTime;
+  fromCell.textContent = from;
+  toCell.textContent = to;
+  distanceCell.textContent = distance;
+
+  // Append the cells to the row
+  newRow.appendChild(idCell);
+  newRow.appendChild(dateCell);
+  newRow.appendChild(fromCell);
+  newRow.appendChild(toCell);
+  newRow.appendChild(distanceCell);
+
+  newRow.id = `trip-${tripCounter}`;
+  tripCounter++;
+  // Append the row to the table
+  tableBody.appendChild(newRow);
+}
+
+
+
+</script>
+</body>
+</html>
+
+
+<!-- // document.addEventListener('DOMContentLoaded', (event) => {
+  //   getDatafromDatabase();
+  // });
+  
+  
+  
+  // import { createClient } from 'https://cdn.skypack.dev/@supabase/supabase-js';
+  
+  
+  // const supabaseUrl = 'https://anfjxpwupsezyqtxugln.supabase.co'; // replace with your supabase url
+  // const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFuZmp4cHd1cHNlenlxdHh1Z2xuIiwicm9sZSI6ImFub24iLCJpYXQiOjE2OTEyNDU5NzcsImV4cCI6MjAwNjgyMTk3N30.z2LWSdcJBOTVfSWFM0aLkaARLJ2Te-5UqGQPrPfSwM4'; // replace with your supabase anonymous key
+  
+  // const supabase = createClient(supabaseUrl, supabaseAnonKey);
+  
+  
+  
+  
+  
+  // async function getDatafromDatabase(event) {
+   
+  
+  //   const supabaseEndpoint = `${supabaseUrl}/rest/v1/Trips`;
+  //   const headers = {
+  //     "apikey": supabaseAnonKey,
+  //     "Content-Type": "application/json",
+  //     "Authorization": `Bearer ${supabaseAnonKey}`, // assuming anonymous access; adjust as needed
+  //   };
+  
+  //   try {
+  //     const response = await fetch(supabaseEndpoint, { headers: headers });
+      
+  //     if (!response.ok) {
+  //       throw new Error(`HTTP error! Status: ${response.status}`);
+  //     }
+  
+  //     const data = await response.json();
+  //     console.log(data);
+  
+  //     // data.forEach(tripData => {
+  //     //   addTripToTable(tripData.dateTime, tripData.source, tripData.destination, tripData.distance);
+  //     // });
+  
+  //   } catch (error) {
+  //     console.error('Error:', error);
+  //   }
+  
+  
+  // }
+  
+  // Client-side JavaScript -->
